@@ -67,13 +67,14 @@ int main(int argc, char** argv)
         return -1;
 	
     /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(640, 480, "Model Loader", NULL, NULL);
+    window = glfwCreateWindow(1280, 960, "Model Loader", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
         return -1;
     }
 	ilInit();
+	iluInit();
 	
 
     /* Make the window's context current */
@@ -88,6 +89,7 @@ int main(int argc, char** argv)
 	//Disable culling
     glDisable(GL_CULL_FACE);
     glCullFace(GL_BACK);
+	glEnable(GL_TEXTURE_2D);
 	
 	Model* teapot = new Model(R"(assets\UtahTeapot.fbx)");
 
@@ -101,22 +103,10 @@ int main(int argc, char** argv)
         return -1;
     }
 	
-	char* imagePath = new char[71]{R"(assets\red-black-gradient.png)"};
-	Texture* gradient = new Texture(imagePath);
+	char* imagePath = new char[20]{R"(assets\wall.jpg)"};
+	Texture* texture = new Texture(imagePath);
 	delete [] imagePath;
 	imagePath = 0;
-	
-	glEnable(GL_TEXTURE_2D);
-	
-	glBindTexture(GL_TEXTURE_2D,gradient->image);
-	
-	glGenerateMipmap(GL_TEXTURE_2D);
-	
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 
 	CheckErrors(); 
 	
@@ -132,6 +122,8 @@ int main(int argc, char** argv)
     	while (angle > 360) {
     		angle -= 360;
     	}
+
+		texture->Bind();
     	
         /* Render here */
         glClearColor(0.0, 0.8, 0.3, 1.0);

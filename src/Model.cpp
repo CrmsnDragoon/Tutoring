@@ -99,7 +99,7 @@ uint32_t AssimpImportFlags(const bool flipUVs, const bool flipWindingOrder) {
 
 bool Model::LoadModel(const std::string& pathToModel) {
 	Assimp::Importer importer;
-	auto scene = importer.ReadFile(pathToModel, AssimpImportFlags(false, false));
+	auto scene = importer.ReadFile(pathToModel, AssimpImportFlags(true, false));
 	if (scene == nullptr) {
 		std::cout << "Failed to import mesh" << std::endl;
 		return false;
@@ -108,18 +108,22 @@ bool Model::LoadModel(const std::string& pathToModel) {
 }
 
 void Model::DrawGL_1_0() {
+	glPushMatrix();
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_COLOR_ARRAY);
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
     glVertexPointer(3, GL_FLOAT, 0, &positions[0]);
     glColorPointer(4, GL_FLOAT, 0, &colours[0]);
     glTexCoordPointer(2, GL_FLOAT, 0, &texCoords[0]);
 
-    /* Send data : 24 vertices */
+	//Perform the draw
     glDrawArrays(GL_TRIANGLES, 0, indexes.size());
 
     /* Cleanup states */
+    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
     glDisableClientState(GL_COLOR_ARRAY);
     glDisableClientState(GL_VERTEX_ARRAY);
+	glPopMatrix();
 }
 
 bool Model::IsLoaded() {
