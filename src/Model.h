@@ -32,6 +32,9 @@ public:
 private:
 	std::vector<float> positions;
 	std::vector<uint32_t> indexes;
+	std::vector<float> normals;
+	std::vector<float> tangents;
+	std::vector<float> binormals;
 	std::vector<float> texCoords;
 	std::vector<float> colours;
 };
