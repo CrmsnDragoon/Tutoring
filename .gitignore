@@ -1,0 +1,4 @@
+/.vs/
+/Debug/
+/GLFW-Assimp-Example/Debug/
+*.vcxproj.user
