@@ -111,7 +111,6 @@ void Model::DrawGL_1_0() {
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_COLOR_ARRAY);
     glVertexPointer(3, GL_FLOAT, 0, &positions[0]);
-    //glIndexPointer(GL_UNSIGNED_INT, 0, &indexes[0]);
     glColorPointer(4, GL_FLOAT, 0, &colours[0]);
     glTexCoordPointer(2, GL_FLOAT, 0, &texCoords[0]);
 

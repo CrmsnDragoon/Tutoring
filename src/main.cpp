@@ -9,6 +9,7 @@
 #include <GLFW/glfw3.h>
 #include "Model.h"
 #include "Texture.h"
+#include <stdexcept>
 #include <ostream>
 #include <iostream>
 #ifndef IL_USE_PRAGMA_LIBS
@@ -25,11 +26,39 @@
 #pragma comment(lib, "glfw3dll.lib")
 #endif
 
+void CheckErrors() {
+	const char* errorStr = nullptr;
+	int error = glfwGetError(&errorStr);
+	if (error != GLFW_NO_ERROR) {
+#ifdef _WIN32
+		OutputDebugStringA(errorStr);
+		OutputDebugStringA("\n");
+#endif
+		std::cout << errorStr << std::endl;
+		error = glfwGetError(&errorStr);
+	}
+
+	error = glGetError();
+	if (error != GL_NO_ERROR) {
+		auto error_string = gluErrorString(error);
+#ifdef _WIN32
+		OutputDebugStringA((char*) error_string);
+		OutputDebugStringA("\n");
+#endif
+		std::cout << error_string << std::endl;
+	}
+}
+
 int main(int argc, char** argv)
 {
 #ifdef _WIN32
 	CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 #endif
+
+	for (size_t i = 0; i < argc; i++)
+	{
+		OutputDebugStringA(argv[i]);
+	}
 	
     GLFWwindow* window;
 
@@ -60,7 +89,7 @@ int main(int argc, char** argv)
     glDisable(GL_CULL_FACE);
     glCullFace(GL_BACK);
 	
-	Model* teapot = new Model(R"(G:\Projects\Tutoring\GLFW-Assimp-Example\assets\UtahTeapot.fbx)");
+	Model* teapot = new Model(R"(assets\UtahTeapot.fbx)");
 
 	if (!teapot->IsLoaded()) {
 #ifdef _WIN32
@@ -72,22 +101,24 @@ int main(int argc, char** argv)
         return -1;
     }
 	
-	char* imagePath = new char[71]{R"(G:\Projects\Tutoring\GLFW-Assimp-Example\assets\red-black-gradient.png)"};
+	char* imagePath = new char[71]{R"(assets\red-black-gradient.png)"};
 	Texture* gradient = new Texture(imagePath);
 	delete [] imagePath;
 	imagePath = 0;
 	
-	glEnable(GL_TEXTURE);
+	glEnable(GL_TEXTURE_2D);
 	
 	glBindTexture(GL_TEXTURE_2D,gradient->image);
+	
+	glGenerateMipmap(GL_TEXTURE_2D);
 	
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	
-	glGenerateMipmap(GL_TEXTURE_2D);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
+	CheckErrors(); 
 	
 	float angle = 0;
 	double startTime = glfwGetTime();
@@ -98,22 +129,24 @@ int main(int argc, char** argv)
     	const double currentTime = glfwGetTime()-startTime;
     	const double deltaTime = currentTime-lastFrameTime;
 		angle += (float)deltaTime*90;
+    	while (angle > 360) {
+    		angle -= 360;
+    	}
+    	
         /* Render here */
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClearColor(0.0, 0.8, 0.3, 1.0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		
         GLint windowWidth, windowHeight;
         glfwGetWindowSize(window, &windowWidth, &windowHeight);
         glViewport(0, 0, windowWidth, windowHeight);
 
-        // Draw stuff
-        glClearColor(0.0, 0.8, 0.3, 1.0);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        glMatrixMode(GL_PROJECTION_MATRIX);
+        glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
         gluPerspective( 60, (double)windowWidth / (double)windowHeight, 0.1, 100000 );
 
-        glMatrixMode(GL_MODELVIEW_MATRIX);
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
         glTranslatef(0,0,-600);
         glRotatef(-90,1,0,0);
         glRotatef(angle,0,0,1);
@@ -125,6 +158,7 @@ int main(int argc, char** argv)
 
         /* Poll for and process events */
         glfwPollEvents();
+		CheckErrors(); 
     	lastFrameTime = currentTime;
     }
 

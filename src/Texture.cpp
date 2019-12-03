@@ -7,6 +7,8 @@
 #define ILUT_USE_WIN32
 #include <IL/ilut.h>
 #include <stdexcept>
+#include <ostream>
+#include <iostream>
 
 static bool ilIsInit = false;
 
@@ -18,12 +20,25 @@ Texture::Texture(char* imagePath) {
 		ilutEnable(ILUT_OPENGL_CONV);
 		ilIsInit = true;
 	}
+	ilutGLBindTexImage();
 	image = ilutGLLoadImage(imagePath);
+	ILenum error = ilGetError();
+	//Print out errors
+	while (error != IL_NO_ERROR) {
+#ifdef _WIN32
+  		OutputDebugStringA(iluErrorString(error));
+		OutputDebugStringA("\n");
+#endif
+
+		std::cout << (iluErrorString(error)) << std::endl;
+		error = ilGetError();
+	}
 	if (image == 0) {
-		throw new std::runtime_error("Failed to load image");
+		throw std::runtime_error("Failed to load image");
 	}
 }
 
 Texture::~Texture() {
 	glDeleteTextures(1,&image);
+	ilDeleteImages(1,&image);
 }
