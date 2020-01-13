@@ -4,10 +4,10 @@
 #include <assimp/scene.h>
 
 
-class Model
+class GLModel
 {
 public:
-	Model(const std::string& modelPath = R"(G:\Projects\Tutoring\GLFW-Assimp-Example\assets\cube.fbx)");
+	GLModel(const std::string& modelPath = R"(G:\Projects\Tutoring\GLFW-Assimp-Example\assets\cube.fbx)");
 	bool ImportStaticModel(const aiScene* scene);
 	bool ImportMesh(const aiMesh* mesh);
 	bool virtual LoadModel(const std::string& pathToModel);

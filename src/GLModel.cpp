@@ -1,4 +1,4 @@
-#include "Model.h"
+#include "GLModel.h"
 #ifdef _WIN32
 //Stop error caused by Assimp using std::min
 #define NOMINMAX
@@ -12,11 +12,11 @@
 #include <cassert>
 #include "Util.hpp"
 
-Model::Model(const std::string& modelPath ) {
-	LoadModel(modelPath);
+GLModel::GLModel(const std::string& GLModelPath ) {
+	LoadModel(GLModelPath);
 }
 
-bool Model::ImportMesh(const aiMesh* mesh) {
+bool GLModel::ImportMesh(const aiMesh* mesh) {
 	uint32_t numVerts = 0;
 	if (mesh->HasPositions()) {
 		numVerts = 3ull * mesh->mNumFaces;
@@ -105,7 +105,7 @@ bool Model::ImportMesh(const aiMesh* mesh) {
 	return true;
 }
 
-bool Model::ImportStaticModel(const aiScene* scene) {
+bool GLModel::ImportStaticModel(const aiScene* scene) {
 	if (scene == nullptr)
 		return false;
 	if (scene->HasMeshes()) {
@@ -114,14 +114,14 @@ bool Model::ImportStaticModel(const aiScene* scene) {
 		//Simple example, just import one mesh with no base transform.
 		return true;
 	}
-	std::cout << "Failed to find mesh in model" << std::endl;
+	std::cout << "Failed to find mesh in GLModel" << std::endl;
 	return false;
 }
 
 
-bool Model::LoadModel(const std::string& pathToModel) {
+bool GLModel::LoadModel(const std::string& pathToGLModel) {
 	Assimp::Importer importer;
-	auto scene = importer.ReadFile(pathToModel, Utils::AssimpImportFlags(false, false));
+	auto scene = importer.ReadFile(pathToGLModel, Utils::AssimpImportFlags(false, false));
 	if (scene == nullptr) {
 		std::cout << "Failed to import mesh" << std::endl;
 		return false;
@@ -129,7 +129,7 @@ bool Model::LoadModel(const std::string& pathToModel) {
 	return ImportStaticModel(scene);
 }
 
-void Model::DrawGL_1_0() {
+void GLModel::DrawGL_1_0() {
 	glPushMatrix();
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_COLOR_ARRAY);
@@ -152,13 +152,13 @@ void Model::DrawGL_1_0() {
 
 static bool OpenGL3_2_ready = false;
 
-void Model::DrawGL_3_2() {
+void GLModel::DrawGL_3_2() {
 	if (!OpenGL3_2_ready) {
 		
 	}
 }
 
-bool Model::IsLoaded() {
+bool GLModel::IsLoaded() {
 	// We currently only care about the ones listed in the return statement, though it would be nice to have all 6 things.
 	// && !tangents.empty() && !bitangents.empty()
 	return !positions.empty() && !normals.empty() && !texCoords.empty() && !colours.empty() ;

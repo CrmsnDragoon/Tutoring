@@ -19,12 +19,33 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\AnimatedMesh.cpp" />
+    <ClCompile Include="..\src\AnimatedModel.cpp" />
+    <ClCompile Include="..\src\AnimationClip.cpp" />
+    <ClCompile Include="..\src\AnimationPlayer.cpp" />
+    <ClCompile Include="..\src\Bone.cpp" />
+    <ClCompile Include="..\src\GameplayModel.cpp" />
     <ClCompile Include="..\src\main.cpp" />
-    <ClCompile Include="..\src\Model.cpp" />
+    <ClCompile Include="..\src\Material.cpp" />
+    <ClCompile Include="..\src\GLModel.cpp" />
+    <ClCompile Include="..\src\SceneNode.cpp" />
+    <ClCompile Include="..\src\StaticModel.cpp" />
     <ClCompile Include="..\src\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\Model.h" />
+    <ClInclude Include="..\src\AnimatedMesh.hpp" />
+    <ClInclude Include="..\src\AnimatedModel.hpp" />
+    <ClInclude Include="..\src\AnimationClip.hpp" />
+    <ClInclude Include="..\src\AnimationPlayer.hpp" />
+    <ClInclude Include="..\src\AnimationUtils.hpp" />
+    <ClInclude Include="..\src\Bone.hpp" />
+    <ClInclude Include="..\src\GameplayModel.hpp" />
+    <ClInclude Include="..\src\Material.hpp" />
+    <ClInclude Include="..\src\Mesh.hpp" />
+    <ClInclude Include="..\src\GLModel.h" />
+    <ClInclude Include="..\src\Model.hpp" />
+    <ClInclude Include="..\src\SceneNode.hpp" />
+    <ClInclude Include="..\src\StaticModel.hpp" />
     <ClInclude Include="..\src\Texture.h" />
     <ClInclude Include="..\src\Util.hpp" />
   </ItemGroup>

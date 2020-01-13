@@ -8,7 +8,7 @@
 //tell GLFW to include the glu header
 #define GLFW_INCLUDE_GLU
 #include <GLFW/glfw3.h>
-#include "Model.h"
+#include "GLModel.h"
 #include "Texture.h"
 #include <stdexcept>
 #include <ostream>
@@ -65,7 +65,7 @@ int main(int argc, char** argv)
         return -1;
 	
     /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(1280, 960, "Model Loader", NULL, NULL);
+    window = glfwCreateWindow(1280, 960, "GLModel Loader", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -89,11 +89,11 @@ int main(int argc, char** argv)
     glCullFace(GL_BACK);
 	glEnable(GL_TEXTURE_2D);
 	
-	Model* teapot = new Model(R"(assets\UtahTeapot.fbx)");
+	GLModel* teapot = new GLModel(R"(assets\UtahTeapot.fbx)");
 
 	if (!teapot->IsLoaded()) {
 #ifdef _WIN32
-		OutputDebugString("Failed to load Model\n");
+		OutputDebugString("Failed to load GLModel\n");
 #endif
 		std::cout << "Failed to Load model" << std::endl;
 		delete teapot;

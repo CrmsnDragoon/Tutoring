@@ -2,7 +2,6 @@
 #include <cstdint>
 #include <assimp/postprocess.h>
 #include <cstdarg>
-#include <debugapi.h>
 #ifdef _WIN32
 //Stop error caused by Assimp using std::min
 #define NOMINMAX
@@ -13,7 +12,7 @@
 
 typedef uint8_t u8;
 typedef uint32_t u32;
-typedef uint64_t u64;
+typedef size_t u64;
 typedef float f32;
 typedef double f64;
 
