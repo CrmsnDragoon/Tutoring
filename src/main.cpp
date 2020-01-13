@@ -1,6 +1,7 @@
 #ifdef _WIN32
 //Stop error caused by Assimp using std::min
 #define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
 #include <glad/glad.h>
@@ -51,11 +52,8 @@ void CheckErrors() {
 
 int main(int argc, char** argv)
 {
-#ifdef _WIN32
-	CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
-#endif
 
-	for (size_t i = 0; i < argc; i++)
+	for (int i = 0; i < argc; i++)
 	{
 		OutputDebugStringA(argv[i]);
 	}
@@ -126,7 +124,7 @@ int main(int argc, char** argv)
 		texture->Bind();
     	
         /* Render here */
-        glClearColor(0.0, 0.8, 0.3, 1.0);
+        glClearColor(0.0f, 0.8f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		
         GLint windowWidth, windowHeight;

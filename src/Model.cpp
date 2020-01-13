@@ -1,9 +1,16 @@
 #include "Model.h"
+#ifdef _WIN32
+//Stop error caused by Assimp using std::min
+#define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
 #include <glad/glad.h>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
-#include <assimp/postprocess.h>
 #include <iostream>
+#include <cassert>
+#include "Util.hpp"
 
 Model::Model(const std::string& modelPath ) {
 	LoadModel(modelPath);
@@ -50,17 +57,17 @@ bool Model::ImportMesh(const aiMesh* mesh) {
 			tangents[component_count++] = tangent.y;
 			tangents[component_count++] = tangent.z;
 		}
-		binormals.clear();
-		binormals.resize(numVerts*3);
+		bitangents.clear();
+		bitangents.resize(numVerts*3);
 		for (unsigned binormal_index = 0, component_count = 0; binormal_index < numVerts; ++binormal_index) {
 			const auto binormal = mesh->mBitangents[indexes[binormal_index]];
-			binormals[component_count++] = binormal.x;
-			binormals[component_count++] = binormal.y;
-			binormals[component_count++] = binormal.z;
+			bitangents[component_count++] = binormal.x;
+			bitangents[component_count++] = binormal.y;
+			bitangents[component_count++] = binormal.z;
 		}
 	}
-	for (unsigned set_index = 0; set_index < AI_MAX_NUMBER_OF_COLOR_SETS; set_index++)
 	{
+		const unsigned set_index = 0;
 		if (mesh->HasVertexColors(set_index)) {
 			colours.clear();
 			colours.resize(numVerts*4);
@@ -71,7 +78,6 @@ bool Model::ImportMesh(const aiMesh* mesh) {
 				colours[component_count++] = color.b;
 				colours[component_count++] = color.a;
 			}
-			break;
 		}
 		else {
 			colours.clear();
@@ -82,12 +88,12 @@ bool Model::ImportMesh(const aiMesh* mesh) {
 				colours[component_count++] = 1;
 				colours[component_count++] = 1;
 			}
-			break;
 		}
 	}
-	unsigned numberActiveChannels = mesh->GetNumUVChannels();
-	for (unsigned tex_index = 0; tex_index < numberActiveChannels; tex_index++)
+	const unsigned numberActiveChannels = mesh->GetNumUVChannels();
+	if (numberActiveChannels > 0)
 	{
+		const uint32_t tex_index = 0;
 		texCoords.clear();
 		texCoords.resize(numVerts*2);
 		for (unsigned tex_coord_index = 0, component_count = 0; tex_coord_index < numVerts; ++tex_coord_index) {
@@ -95,44 +101,32 @@ bool Model::ImportMesh(const aiMesh* mesh) {
 			texCoords[component_count++] = tex_coord.x;
 			texCoords[component_count++] = tex_coord.y;
 		}
-		break;
 	}
 	return true;
 }
 
-bool Model::ImportStaticMesh(const aiScene* scene) {
+bool Model::ImportStaticModel(const aiScene* scene) {
 	if (scene == nullptr)
 		return false;
 	if (scene->HasMeshes()) {
-		for (unsigned long long mesh_index = 0; mesh_index < scene->mNumMeshes; ++mesh_index) {
-			const auto loaded_mesh = scene->mMeshes[mesh_index];
-			ImportMesh(loaded_mesh);
-			//Simple example, just import one mesh with no base transform.
-			return true;
-		}
+		const auto loaded_mesh = scene->mMeshes[0];
+		ImportMesh(loaded_mesh);
+		//Simple example, just import one mesh with no base transform.
+		return true;
 	}
 	std::cout << "Failed to find mesh in model" << std::endl;
 	return false;
 }
 
-uint32_t AssimpImportFlags(const bool flipUVs, const bool flipWindingOrder) {
-	uint32_t flags = aiProcess_Triangulate |
-		aiProcess_JoinIdenticalVertices |
-		aiProcess_SortByPType |
-		aiProcess_GenNormals;
-	if (flipUVs) { flags |= aiProcess_FlipUVs; }
-	if (flipWindingOrder) { flags |= aiProcess_FlipWindingOrder; }
-	return flags;
-}
 
 bool Model::LoadModel(const std::string& pathToModel) {
 	Assimp::Importer importer;
-	auto scene = importer.ReadFile(pathToModel, AssimpImportFlags(true, false));
+	auto scene = importer.ReadFile(pathToModel, Utils::AssimpImportFlags(false, false));
 	if (scene == nullptr) {
 		std::cout << "Failed to import mesh" << std::endl;
 		return false;
 	}
-	return ImportStaticMesh(scene);
+	return ImportStaticModel(scene);
 }
 
 void Model::DrawGL_1_0() {
@@ -155,8 +149,17 @@ void Model::DrawGL_1_0() {
 	glPopMatrix();
 }
 
+
+static bool OpenGL3_2_ready = false;
+
+void Model::DrawGL_3_2() {
+	if (!OpenGL3_2_ready) {
+		
+	}
+}
+
 bool Model::IsLoaded() {
 	// We currently only care about the ones listed in the return statement, though it would be nice to have all 6 things.
-	// && !tangents.empty() && !binormals.empty()
+	// && !tangents.empty() && !bitangents.empty()
 	return !positions.empty() && !normals.empty() && !texCoords.empty() && !colours.empty() ;
 }
