@@ -149,7 +149,7 @@ int main(int argc, char** argv)
     	
 		teapot->DrawGL_1_0();
 
-    	animModel->DrawGL_Animated();
+    	//animModel->DrawGL_Animated();
     	
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
