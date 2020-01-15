@@ -23,4 +23,7 @@ protected:
 public:
 	std::vector<Bone*> bones{};
 	std::vector<BoneWeight> boneWeights{};
+			GLuint vertexArrayBuffer;
+			GLuint vertexBuffer;
+			GLuint indexBuffer;
 };

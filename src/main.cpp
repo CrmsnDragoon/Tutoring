@@ -18,6 +18,8 @@
 #endif
 #include <IL/il.h>
 #include <IL/ilu.h>
+#include "Model.hpp"
+#include "AnimatedModel.hpp"
 
 //Dragoon: Include directory in the base of the repo contains glad, GLFW I have installed on my path through vcpkg.
 //Dragoon: I recommend using a package manager, it still allows you to use CMAKE with it.
@@ -89,8 +91,8 @@ int main(int argc, char** argv)
     glCullFace(GL_BACK);
 	glEnable(GL_TEXTURE_2D);
 	
-	GLModel* teapot = new GLModel(R"(assets\UtahTeapot.fbx)");
-
+	GLModel* teapot = new GLModel(R"(assets/UtahTeapot.fbx)");
+	
 	if (!teapot->IsLoaded()) {
 #ifdef _WIN32
 		OutputDebugString("Failed to load GLModel\n");
@@ -107,6 +109,10 @@ int main(int argc, char** argv)
 	imagePath = 0;
 
 	CheckErrors(); 
+
+	AnimatedModel animModel = AnimatedModel::ImportModel("assets/UtahTeapot.fbx", false, false);
+
+	animModel.setupGL();
 	
 	float angle = 0;
 	double startTime = glfwGetTime();
@@ -142,6 +148,8 @@ int main(int argc, char** argv)
         glRotatef(angle,0,0,1);
     	
 		teapot->DrawGL_1_0();
+
+    	animModel->DrawGL_Animated();
     	
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
