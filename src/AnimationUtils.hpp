@@ -414,7 +414,7 @@ inline void ImportMesh(Mesh& out, const aiMesh* mesh, const aiScene* scene) {
 	}
 	out.materialIndex = mesh->mMaterialIndex;
 
-	if (out.vertexColours->size() == 0) {
+	if (out.vertexColours[0].empty()) {
 		aiColor3D colour (0.f,0.f,0.f);
 		auto res = scene->mMaterials[out.materialIndex]->Get(AI_MATKEY_COLOR_DIFFUSE, colour);
 		if (res == AI_SUCCESS) {
@@ -444,6 +444,15 @@ inline void ImportMesh(Mesh& out, const aiMesh* mesh, const aiScene* scene) {
 		res = scene->mMaterials[out.materialIndex]->Get(AI_MATKEY_SHININESS_STRENGTH, shininess_strength);
 		if (res == AI_SUCCESS) {
 			out.material.shininessStrength = shininess_strength;
+		}
+
+		//Now that we have material information, just copy the diffuse value across, it's ok.
+		out.vertexColours[0].resize(numVerts);
+		
+		auto vec = XMLoadFloat3(&out.material.diffuse);
+		vec = XMVectorSetByIndex(vec, out.material.opacity,3);
+		for (int colour_index = 0; colour_index < numVerts; ++colour_index) {
+			XMStoreFloat4(&out.vertexColours[0][colour_index],vec);
 		}
 	}
 	

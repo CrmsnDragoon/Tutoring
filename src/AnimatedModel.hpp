@@ -26,11 +26,13 @@ public:
 		}
 	}
 	void Draw1_0() {
+		rootNode->UpdateTransform();
 		for (auto& mesh : meshes) {
 			mesh.Draw1_0();
 		}
 	}
 	void Draw3_2() {
+		rootNode->UpdateTransform();
 		for (auto& mesh : meshes) {
 			mesh.Draw3_2();
 		}

@@ -9,7 +9,7 @@ class GLModel
 public:
 	GLModel(const std::string& modelPath = R"(G:\Projects\Tutoring\GLFW-Assimp-Example\assets\cube.fbx)");
 	bool ImportStaticModel(const aiScene* scene);
-	bool ImportMesh(const aiMesh* mesh);
+	bool ImportMesh(const aiMesh* mesh, const aiScene* scene);
 	bool virtual LoadModel(const std::string& pathToModel);
 	void SetupGL_1_0();
 	void virtual DrawGL_1_0();

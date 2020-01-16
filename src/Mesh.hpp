@@ -28,8 +28,6 @@ public:
 	void virtual setupGL();
 	void virtual Draw3_2() const;
 	void Draw1_0();
-	
-	std::vector<float> concanonated;
 };
 
 inline void Mesh::setupGL() {
@@ -39,6 +37,7 @@ inline void Mesh::setupGL() {
 	struct Vertex {
 		XMFLOAT3 Position;
 		XMFLOAT3 Normal;
+		XMFLOAT4 Colour;
 		XMFLOAT2 TexCoords;
 	};
 	std::vector<Vertex> vertices = std::vector<Vertex>(positions.size());
@@ -47,6 +46,7 @@ inline void Mesh::setupGL() {
 		vertices[index] = {
 			positions[index],
 			normals[index],
+			vertexColours[0][index],
 			{texCoords[0][index].x, texCoords[0][index].y}
 		};
 	}
@@ -70,9 +70,12 @@ inline void Mesh::setupGL() {
 	// vertex normals
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normal));
-	// vertex texture coords
+	// vertex normals
 	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
+	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Colour));
+	// vertex texture coords
+	glEnableVertexAttribArray(3);
+	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
 
 	glBindVertexArray(0);
 }
@@ -92,12 +95,17 @@ inline void Mesh::Draw3_2() const {
 
 inline void Mesh::Draw1_0() {
 	glPushMatrix();
+
+	//glLoadMatrixf(&sceneNode->Transform().m[0][0]);
+	
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_NORMAL_ARRAY);
+	glEnableClientState(GL_COLOR_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
 	glVertexPointer(3, GL_FLOAT, 0, positions.data());
 	glNormalPointer(GL_FLOAT, 0, normals.data());
+	glColorPointer(4, GL_FLOAT, 0, vertexColours[0].data());
 	glTexCoordPointer(3, GL_FLOAT, 0, texCoords->data());
 
 	//Perform the draw
@@ -105,6 +113,7 @@ inline void Mesh::Draw1_0() {
 
 	/* Cleanup states */
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	glDisableClientState(GL_COLOR_ARRAY);
 	glDisableClientState(GL_NORMAL_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
 	glPopMatrix();

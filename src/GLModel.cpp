@@ -17,7 +17,7 @@ GLModel::GLModel(const std::string& GLModelPath ) {
 	LoadModel(GLModelPath);
 }
 
-bool GLModel::ImportMesh(const aiMesh* mesh) {
+bool GLModel::ImportMesh(const aiMesh* mesh, const aiScene* scene) {
 	uint32_t numVerts;
 	if (mesh->HasPositions()) {
 		indexes.clear();
@@ -83,12 +83,24 @@ bool GLModel::ImportMesh(const aiMesh* mesh) {
 		else {
 			colours.clear();
 			colours.resize(numVerts*4);
-			for (unsigned col_index = 0, component_count = 0; col_index < numVerts; ++col_index) {
-				colours[component_count++] = 1;
-				colours[component_count++] = 1;
-				colours[component_count++] = 1;
-				colours[component_count++] = 1;
+
+			aiColor4D colour;
+			if (scene->mMaterials[mesh->mMaterialIndex]->Get(AI_MATKEY_COLOR_DIFFUSE,colour) == aiReturn_SUCCESS) {
+				for (unsigned col_index = 0, component_count = 0; col_index < numVerts; ++col_index) {
+					colours[component_count++] = colour.r;
+					colours[component_count++] = colour.g;
+					colours[component_count++] = colour.b;
+					colours[component_count++] = colour.a;
+				}
 			}
+			else {
+				for (unsigned col_index = 0, component_count = 0; col_index < numVerts; ++col_index) {
+					colours[component_count++] = 1;
+					colours[component_count++] = 1;
+					colours[component_count++] = 1;
+					colours[component_count++] = 1;
+				}
+			} 
 		}
 	}
 	const unsigned numberActiveChannels = mesh->GetNumUVChannels();
@@ -111,7 +123,7 @@ bool GLModel::ImportStaticModel(const aiScene* scene) {
 		return false;
 	if (scene->HasMeshes()) {
 		const auto loaded_mesh = scene->mMeshes[0];
-		ImportMesh(loaded_mesh);
+		ImportMesh(loaded_mesh, scene);
 		//Simple example, just import one mesh with no base transform.
 		return true;
 	}
@@ -155,18 +167,22 @@ void GLModel::DrawGL_1_0() {
 void GLModel::SetupGL_3_2() {
 
 	assert(!positions.empty());
+	
+	struct Vertex {
+		DirectX::XMFLOAT3 Position;
+		DirectX::XMFLOAT3 Normal;
+		DirectX::XMFLOAT4 Colour;
+		DirectX::XMFLOAT2 TexCoords;
+	};
+	std::vector<Vertex> vertices = std::vector<Vertex>(positions.size()/3);
 
-	std::vector<float> vertices = std::vector<float>(positions.size() + colours.size() + texCoords.size());
-
-	unsigned cocanonated_index = 0;
-	for (unsigned index = 0; index < positions.size(); ++index) {
-		vertices[cocanonated_index++] = positions[index];
-	}
-	for (unsigned index = 0; index < colours.size(); ++index) {
-		vertices[cocanonated_index++] = colours[index];
-	}
-	for (unsigned index = 0; index < texCoords.size(); ++index) {
-		vertices[cocanonated_index++] = texCoords[index];
+	for (unsigned index = 0, vert_index= 0, colour_index= 0, normal_index= 0, texCoord_index = 0; index < vertices.size(); ++index) {
+		vertices[index] = {
+			{positions[vert_index++], positions[vert_index++], positions[vert_index++]},
+			{normals[normal_index++], normals[normal_index++], normals[normal_index++]},
+			{colours[colour_index++], colours[colour_index++], colours[colour_index++], colours[colour_index++],},
+			{texCoords[texCoord_index++], texCoords[texCoord_index++]}
+		};
 	}
 
 	glGenVertexArrays(1, &vertexArrayBuffer);
@@ -176,29 +192,30 @@ void GLModel::SetupGL_3_2() {
 	glBindVertexArray(vertexArrayBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
 
-	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), vertices.data(), GL_STATIC_DRAW);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexes.size() * sizeof(unsigned int),
 				 indexes.data(), GL_STATIC_DRAW);
-
+	
 	// vertex positions
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
 	// vertex normals
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float), (void*)(positions.size() * sizeof(float))
-	);
-	// vertex texture coords
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normal));
+	// vertex normals
 	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(float), (void*)((positions.size() + colours.size()) * sizeof(float))
-	);
+	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Colour));
+	// vertex texture coords
+	glEnableVertexAttribArray(3);
+	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
 
 	glBindVertexArray(0);
 }
 
 void GLModel::DrawGL_3_2() {
-	if (!vertexArrayBuffer != 0 && vertexBuffer != 0 && indexBuffer != 0) {
+	if (vertexArrayBuffer != 0 && vertexBuffer != 0 && indexBuffer != 0) {
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
 		glBindVertexArray(vertexArrayBuffer);
 		glDrawElements(GL_TRIANGLES, indexes.size(), GL_UNSIGNED_INT, 0);

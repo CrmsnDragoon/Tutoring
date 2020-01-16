@@ -156,10 +156,9 @@ int main(int argc, char** argv)
 		teapot->DrawGL_3_2();
 
     	
-        glMatrixMode(GL_MODELVIEW);
+        //glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
         glTranslatef(0,0,-600);
-        glRotatef(-90,1,0,0);
     	animModel.Draw3_2();
     	
         /* Swap front and back buffers */

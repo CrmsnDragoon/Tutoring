@@ -386,8 +386,6 @@ AnimatedModel ImportAnimatedModelAssimp(const aiScene* const scene) {
 		std::set<uint32_t> usedIndexes;
 		const uint32_t num_meshes = scene->mNumMeshes;
 		outModel.meshes.resize(scene->mNumMeshes);
-#pragma loop(hint_parallel(0))
-#pragma loop(ivdep)
 		for (uint32_t mesh_index = 0; mesh_index < num_meshes; ++mesh_index) {
 			const auto mesh = scene->mMeshes[mesh_index];
 			ImportMesh(outModel.meshes[mesh_index], mesh, scene);
