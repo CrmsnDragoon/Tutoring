@@ -113,7 +113,10 @@ int main(int argc, char** argv)
 
 	AnimatedModel animModel = AnimatedModel::ImportModel("assets/UtahTeapot.fbx", false, false);
 
-	animModel.setupGL();
+	//teapot->SetupGL_3_2();
+	CheckErrors(); 
+	//animModel.setupGL();
+	CheckErrors(); 
 	
 	float angle = 0;
 	double startTime = glfwGetTime();
@@ -121,6 +124,7 @@ int main(int argc, char** argv)
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
+		CheckErrors(); 
     	const double currentTime = glfwGetTime()-startTime;
     	const double deltaTime = currentTime-lastFrameTime;
 		angle += (float)deltaTime*90;
@@ -141,7 +145,8 @@ int main(int argc, char** argv)
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
         gluPerspective( 60, (double)windowWidth / (double)windowHeight, 0.1, 100000 );
-
+		
+    	
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
         glTranslatef(0,0,-600);
@@ -150,7 +155,12 @@ int main(int argc, char** argv)
     	
 		teapot->DrawGL_1_0();
 
-    	//animModel->DrawGL_Animated();
+    	
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+        glTranslatef(0,0,-600);
+        glRotatef(-90,1,0,0);
+    	animModel.Draw1_0();/**/
     	
         /* Swap front and back buffers */
         glfwSwapBuffers(window);

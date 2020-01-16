@@ -11,10 +11,15 @@ public:
 	bool ImportStaticModel(const aiScene* scene);
 	bool ImportMesh(const aiMesh* mesh);
 	bool virtual LoadModel(const std::string& pathToModel);
+	void SetupGL_1_0();
 	void virtual DrawGL_1_0();
+	void SetupGL_3_2();
 	void virtual DrawGL_3_2();
 	bool virtual IsLoaded();
 protected:
+	unsigned vertexArrayBuffer;
+	unsigned vertexBuffer;
+	unsigned indexBuffer;
 	std::vector<float> positions;
 	std::vector<uint32_t> indexes;
 	std::vector<float> normals;
