@@ -20,6 +20,7 @@
 #include <IL/ilu.h>
 #include "Model.hpp"
 #include "AnimatedModel.hpp"
+#include <propidlbase.h>
 
 //Dragoon: Include directory in the base of the repo contains glad, GLFW I have installed on my path through vcpkg.
 //Dragoon: I recommend using a package manager, it still allows you to use CMAKE with it.
@@ -55,19 +56,19 @@ void CheckErrors() {
 int main(int argc, char** argv)
 {
 
+	CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+
 	for (int i = 0; i < argc; i++)
 	{
 		OutputDebugStringA(argv[i]);
 	}
-	
-    GLFWwindow* window;
 
-    /* Initialize the GLFW library */
+	/* Initialize the GLFW library */
     if (!glfwInit())
         return -1;
 	
     /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(1280, 960, "GLModel Loader", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(1280, 960, "GLModel Loader", NULL, NULL);
     if (!window)
     {
         glfwTerminate();

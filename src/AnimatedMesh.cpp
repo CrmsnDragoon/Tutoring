@@ -3,6 +3,15 @@
 
 void AnimatedMesh::setupGL() {
 
+	assert(!positions.empty());
+	assert(!normals.empty());
+	assert(!texCoords[0].empty());
+
+	if (boneWeights.empty()) {
+		this->Mesh::setupGL();
+		return;
+	}
+	
 	struct Vertex {
 		XMFLOAT3 Position;
 		XMFLOAT3 Normal;
@@ -21,10 +30,6 @@ void AnimatedMesh::setupGL() {
 			boneWeights[index].boneWeights
 		};
 	}
-
-	GLuint vertexArrayBuffer;
-	GLuint vertexBuffer;
-	GLuint indexBuffer;
 
 	glGenVertexArrays(1, &vertexArrayBuffer);
 	glGenBuffers(1, &vertexBuffer);
@@ -56,7 +61,7 @@ void AnimatedMesh::setupGL() {
 	glBindVertexArray(0);
 }
 
-void AnimatedMesh::Draw() const {
+void AnimatedMesh::Draw3_2() const {
 	// draw mesh
 	glBindVertexArray(vertexArrayBuffer);
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);

@@ -29,14 +29,7 @@ protected:
 public:
 	std::vector<Bone*> bones{};
 	std::vector<BoneWeight> boneWeights{};
-	unsigned vertexArrayBuffer;
-	unsigned vertexBuffer;
-	unsigned indexBuffer;
-	void setupGL();
-	void Draw() {
-        // draw mesh
-        glBindVertexArray(vertexArrayBuffer);
-        glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
-        glBindVertexArray(0);
-	}
+	void setupGL() override;
+	void Draw3_2() const override;
+	
 };

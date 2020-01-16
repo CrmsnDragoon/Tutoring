@@ -25,9 +25,14 @@ public:
 			mesh.setupGL();
 		}
 	}
-	void Draw() {
+	void Draw1_0() {
 		for (auto& mesh : meshes) {
-			mesh.Draw();
+			mesh.Draw1_0();
+		}
+	}
+	void Draw3_2() {
+		for (auto& mesh : meshes) {
+			mesh.Draw3_2();
 		}
 	}
 };
