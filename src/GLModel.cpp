@@ -18,9 +18,8 @@ GLModel::GLModel(const std::string& GLModelPath ) {
 }
 
 bool GLModel::ImportMesh(const aiMesh* mesh) {
-	uint32_t numVerts = 0;
+	uint32_t numVerts;
 	if (mesh->HasPositions()) {
-		numVerts = mesh->mNumVertices;
 		indexes.clear();
 		indexes.resize(mesh->mNumFaces*3);
 		for (unsigned face_index = 0, total_index = 0; face_index < mesh->mNumFaces; ++face_index) {
@@ -28,6 +27,7 @@ bool GLModel::ImportMesh(const aiMesh* mesh) {
 				indexes[total_index] = mesh->mFaces[face_index].mIndices[index];
 			}
 		}
+		numVerts = mesh->mNumVertices;
 		positions.clear();
 		positions.resize(numVerts * 3);
 		for (unsigned pos_index = 0, component_count = 0; pos_index < numVerts; ++pos_index) {
@@ -199,9 +199,11 @@ void GLModel::SetupGL_3_2() {
 
 void GLModel::DrawGL_3_2() {
 	if (!vertexArrayBuffer != 0 && vertexBuffer != 0 && indexBuffer != 0) {
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
 		glBindVertexArray(vertexArrayBuffer);
 		glDrawElements(GL_TRIANGLES, indexes.size(), GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 }
 

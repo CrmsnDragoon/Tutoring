@@ -113,9 +113,9 @@ int main(int argc, char** argv)
 
 	AnimatedModel animModel = AnimatedModel::ImportModel("assets/UtahTeapot.fbx", false, false);
 
-	//teapot->SetupGL_3_2();
+	teapot->SetupGL_3_2();
 	CheckErrors(); 
-	//animModel.setupGL();
+	animModel.setupGL();
 	CheckErrors(); 
 	
 	float angle = 0;
@@ -153,14 +153,14 @@ int main(int argc, char** argv)
         glRotatef(-90,1,0,0);
         glRotatef(angle,0,0,1);
     	
-		teapot->DrawGL_1_0();
+		teapot->DrawGL_3_2();
 
     	
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
         glTranslatef(0,0,-600);
         glRotatef(-90,1,0,0);
-    	animModel.Draw1_0();/**/
+    	animModel.Draw3_2();
     	
         /* Swap front and back buffers */
         glfwSwapBuffers(window);

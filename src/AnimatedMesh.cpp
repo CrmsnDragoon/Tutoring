@@ -63,9 +63,11 @@ void AnimatedMesh::setupGL() {
 
 void AnimatedMesh::Draw3_2() const {
 	// draw mesh
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
 	glBindVertexArray(vertexArrayBuffer);
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	/*glActiveTexture(GL_TEXTURE0);
     glUniform1i(glGetUniformLocation(shader.ID, (name + number).c_str()), i);
