@@ -448,7 +448,7 @@ void ImportMesh(Mesh& out, const aiMesh* mesh, const aiScene* scene) {
 		
 		auto vec = XMLoadFloat3(&out.material.diffuse);
 		vec = XMVectorSetByIndex(vec, out.material.opacity,3);
-		for (int colour_index = 0; colour_index < numVerts; ++colour_index) {
+		for (uint32_t colour_index = 0; colour_index < numVerts; ++colour_index) {
 			XMStoreFloat4(&out.vertexColours[0][colour_index],vec);
 		}
 	}

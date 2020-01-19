@@ -1,6 +1,4 @@
 #pragma once
-#include "Util.hpp"
-#include "Model.hpp"
 #include <DirectXMath.h>
 #include "AnimatedModel.hpp"
 

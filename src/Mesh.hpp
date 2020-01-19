@@ -2,6 +2,12 @@
 #include "DirectXMath.h"
 #include "SceneNode.hpp"
 #include "Material.hpp"
+#ifdef _WIN32
+//Stop error caused by Assimp using std::min
+#define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
 #include <glad/glad.h>
 
 class Mesh {
