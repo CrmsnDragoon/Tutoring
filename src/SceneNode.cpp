@@ -1,5 +1,4 @@
-
-#include <utility>
+#include "SceneNode.hpp"
 #include "AnimatedMesh.hpp"
 
 void SceneNode::UpdateTransform() {

@@ -2,12 +2,6 @@
 #include "DirectXMath.h"
 #include "Mesh.hpp"
 #include "Bone.hpp"
-#ifdef _WIN32
-#define NOMINMAX
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#endif
-#include <glad/glad.h>
 
 class Bone;
 struct BoneWeight_interstitial {

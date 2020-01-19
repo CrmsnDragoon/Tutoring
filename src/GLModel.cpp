@@ -12,6 +12,7 @@
 #include <cassert>
 #include "Util.hpp"
 #include <DirectXMath.h>
+#include "AnimationUtils.hpp"
 
 GLModel::GLModel(const std::string& GLModelPath ) {
 	LoadModel(GLModelPath);
@@ -134,7 +135,7 @@ bool GLModel::ImportStaticModel(const aiScene* scene) {
 
 bool GLModel::LoadModel(const std::string& pathToGLModel) {
 	Assimp::Importer importer;
-	auto scene = importer.ReadFile(pathToGLModel, Utils::AssimpImportFlags(false, false));
+	auto scene = importer.ReadFile(pathToGLModel, AssimpImportFlags(false, false));
 	if (scene == nullptr) {
 		std::cout << "Failed to import mesh" << std::endl;
 		return false;

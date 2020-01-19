@@ -1,9 +1,8 @@
-
 #include "StaticModel.hpp"
-#include "AnimationUtils.hpp"
-#include <Assimp/scene.h>
-#include "Util.hpp"
 #include <assimp/Importer.hpp>
+#include <Assimp/scene.h>
+#include "AnimationUtils.hpp"
+#include "Util.hpp"
 
 
 StaticMesh ImportStaticMesh(const aiScene* scene) {

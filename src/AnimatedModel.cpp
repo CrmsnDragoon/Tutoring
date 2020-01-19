@@ -1,7 +1,6 @@
-
 #include "AnimatedModel.hpp"
-#include <set>
 #include <list>
+#include <set>
 
 #define CACONYM_3D_PRINT_MATERIALS 1
 #define CACONYM_3D_PRINT_SKELETON 0
