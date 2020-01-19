@@ -368,7 +368,6 @@ void ImportMesh(Mesh& out, const aiMesh* mesh, const aiScene* scene) {
 	}
 	const uint32_t numFaces = mesh->mNumFaces;
 	out.indices.resize(3ull * size_t(numFaces));
-#pragma loop(hint_parallel(0))
 	for (uint32_t face_index = 0, total_index = 0; face_index < numFaces; ++face_index) {
 		//Triangulate is on by default
 		for (size_t index = 0; index < 3/*mesh->mFaces[face_index].mNumIndices*/; ++index, ++total_index) {
@@ -377,7 +376,6 @@ void ImportMesh(Mesh& out, const aiMesh* mesh, const aiScene* scene) {
 	}
 	if (mesh->HasNormals()) {
 		out.normals.resize(numVerts);
-#pragma loop(hint_parallel(0))
 		for (uint32_t normal_index = 0; normal_index < numVerts; ++normal_index) {
 			const auto normal = mesh->mNormals[normal_index];
 			out.normals[normal_index] = XMFLOAT3(normal.x, normal.y, normal.z);
@@ -386,12 +384,10 @@ void ImportMesh(Mesh& out, const aiMesh* mesh, const aiScene* scene) {
 	if (mesh->HasTangentsAndBitangents()) {
 		out.tangents.resize(numVerts);
 		out.binormals.resize(numVerts);
-#pragma loop(hint_parallel(0))
 		for (uint32_t tangent_index = 0; tangent_index < numVerts; ++tangent_index) {
 			const auto tangent = mesh->mTangents[tangent_index];
 			out.tangents[tangent_index] = XMFLOAT3(tangent.x, tangent.y, tangent.z);
 		}
-#pragma loop(hint_parallel(0))
 		for (uint32_t binormal_index = 0; binormal_index < numVerts; ++binormal_index) {
 			const auto binormal = mesh->mBitangents[binormal_index];
 			out.binormals[binormal_index] = XMFLOAT3(binormal.x, binormal.y, binormal.z);
@@ -401,7 +397,6 @@ void ImportMesh(Mesh& out, const aiMesh* mesh, const aiScene* scene) {
 	{
 		if (mesh->HasVertexColors(set_index)) {
 			out.vertexColours[set_index].resize(numVerts);
-#pragma loop(hint_parallel(0))
 			for (uint32_t col_index = 0; col_index < numVerts; ++col_index) {
 				const auto color = mesh->mColors[set_index][col_index];
 				out.vertexColours[set_index][col_index] = XMFLOAT4(color.r, color.g, color.b, color.a);
@@ -457,7 +452,6 @@ void ImportMesh(Mesh& out, const aiMesh* mesh, const aiScene* scene) {
 	for (uint32_t tex_index = 0; tex_index < out.numberActiveTexCoordChannels; tex_index++)
 	{
 		out.texCoords[tex_index].resize(mesh->mNumVertices);
-#pragma loop(hint_parallel(0))
 		for (uint32_t tex_coord_index = 0; tex_coord_index < numVerts; ++tex_coord_index) {
 			const auto tex_coord = mesh->mTextureCoords[tex_index][tex_coord_index];
 			out.texCoords[tex_index][tex_coord_index] = (XMFLOAT3(tex_coord.x, tex_coord.y, tex_coord.z));

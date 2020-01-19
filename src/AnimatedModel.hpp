@@ -37,5 +37,11 @@ public:
 			mesh.Draw3_2();
 		}
 	}
+
+	void Shutdown() {
+		for (auto& mesh : meshes) {
+			mesh.Shutdown();
+		}
+	}
 };
 

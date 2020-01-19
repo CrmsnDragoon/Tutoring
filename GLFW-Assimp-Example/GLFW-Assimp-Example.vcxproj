@@ -51,6 +51,14 @@
     <ClInclude Include="..\src\Texture.h" />
     <ClInclude Include="..\src\Util.hpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\assets\Shaders\bone.frag" />
+    <None Include="..\assets\Shaders\bone.vert" />
+    <None Include="..\assets\Shaders\colour.frag" />
+    <None Include="..\assets\Shaders\colour.vert" />
+    <None Include="..\assets\Shaders\tex.frag" />
+    <None Include="..\assets\Shaders\tex.vert" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{3920DDA4-B224-457C-99A6-D9DA6818E8E5}</ProjectGuid>

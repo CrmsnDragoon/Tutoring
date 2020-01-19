@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{23f49875-cd21-4b70-863d-d253571a40a4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\main.cpp">
@@ -104,5 +107,25 @@
     <ClInclude Include="..\src\Model.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\assets\Shaders\bone.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\assets\Shaders\bone.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\assets\Shaders\colour.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\assets\Shaders\colour.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\assets\Shaders\tex.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\assets\Shaders\tex.vert">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

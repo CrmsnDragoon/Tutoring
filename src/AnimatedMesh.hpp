@@ -25,5 +25,4 @@ public:
 	std::vector<BoneWeight> boneWeights{};
 	void setupGL() override;
 	void Draw3_2() const override;
-	
 };

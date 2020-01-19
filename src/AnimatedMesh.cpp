@@ -15,20 +15,36 @@ void AnimatedMesh::setupGL() {
 	struct Vertex {
 		XMFLOAT3 Position;
 		XMFLOAT3 Normal;
+		XMFLOAT4 Colour;
 		XMFLOAT2 TexCoords;
 		XMUINT4 BoneIndices;
 		XMFLOAT4 BoneWeights;
 	};
 	std::vector<Vertex> vertices = std::vector<Vertex>(positions.size());
 
-	for (unsigned index = 0; index < positions.size(); ++index) {
-		vertices[index] = {
-			positions[index],
-			normals[index],
-			{texCoords[0][index].x, texCoords[0][index].y},
-			boneWeights[index].boneIndexes,
-			boneWeights[index].boneWeights
-		};
+	if (vertexColours[0].empty()) {
+		for (unsigned index = 0; index < positions.size(); ++index) {
+			vertices[index] = {
+				positions[index],
+				normals[index],
+				vertexColours[0][index],
+				{texCoords[0][index].x, texCoords[0][index].y},
+				boneWeights[index].boneIndexes,
+				boneWeights[index].boneWeights
+			};
+		}
+	}
+	else {
+		for (unsigned index = 0; index < positions.size(); ++index) {
+			vertices[index] = {
+				positions[index],
+				normals[index],
+				vertexColours[0][index],
+				{texCoords[0][index].x, texCoords[0][index].y},
+				boneWeights[index].boneIndexes,
+				boneWeights[index].boneWeights
+			};
+		}
 	}
 
 	glGenVertexArrays(1, &vertexArrayBuffer);
@@ -50,13 +66,15 @@ void AnimatedMesh::setupGL() {
 	// vertex normals
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normal));
-	// vertex texture coords
 	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
+	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Colour));
+	// vertex texture coords
 	glEnableVertexAttribArray(3);
-	glVertexAttribPointer(3, 4, GL_UNSIGNED_INT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, BoneIndices));
+	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
 	glEnableVertexAttribArray(4);
-	glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, BoneWeights));
+	glVertexAttribPointer(4, 4, GL_UNSIGNED_INT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, BoneIndices));
+	glEnableVertexAttribArray(5);
+	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, BoneWeights));
 
 	glBindVertexArray(0);
 }

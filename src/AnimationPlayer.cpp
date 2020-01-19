@@ -61,10 +61,6 @@ void AnimationPlayer::GetBindPose(AnimationPlayerState& state, SceneNode* sceneN
 }
 
 void AnimationPlayer::Update(const float dt, AnimationPlayerState* states, size_t stateCount) {
-/* stateCount and state_index need to both be signed ints
- * uses the entire CPU but ends up being slower.
-#pragma omp parallel
-#pragma omp for*/
 	for (size_t state_index = 0; state_index < stateCount; ++state_index) {
 		auto& state = states[state_index];
 
@@ -133,19 +129,6 @@ void AnimationPlayer::GetPose(AnimationPlayerState& state, SceneNode* sceneNode,
 
 void AnimationPlayer::GetInterpolatedPose(AnimationPlayerState& state, SceneNode* sceneNode, const XMMATRIX parentTransform) {
 	if (sceneNode == nullptr) return;
-	/*Bone* bone = dynamic_cast<Bone*>(sceneNode);
-	if (bone != nullptr) {
-		state.model->animations[state.currentClipIndex].
-			GetInterpolatedTransform(state.currentPlaybackTimeInTicks, bone);
-	}
-	const XMMATRIX toRootTransform = sceneNode->TransformMatrix();
-	if (bone != nullptr) {
-		XMStoreFloat4x4(&state.boneMats[bone->Index()],
-						bone->OffsetTransformMatrix() * toRootTransform * XMLoadFloat4x4(&state.inverseRootTransform));
-	}
-	for (SceneNode* child : sceneNode->childList) { GetInterpolatedPose(state, child); }
-	*/
-	//As long as GetInterpolatedTransform modifies the scene node's local matrix, the above does the same as the below code.
 	
 	XMFLOAT4X4 toParentTransform = XMFLOAT4X4{
 		1,0,0,0,

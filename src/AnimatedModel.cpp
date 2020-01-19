@@ -414,7 +414,6 @@ AnimatedModel ImportAnimatedModelAssimp(const aiScene* const scene) {
 	}
 	const auto bone_length = outModel.bones.size();
 	
-#pragma loop(hint_parallel(0))
 	for (uint32_t bone_index = 0; bone_index < bone_length; ++bone_index) {
 		const auto bone = outModel.bones[bone_index];
 		if (bone_index != outModel.bones[bone_index]->Index()) {

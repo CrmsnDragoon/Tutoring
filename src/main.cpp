@@ -21,6 +21,8 @@
 #include "Model.hpp"
 #include "AnimatedModel.hpp"
 #include <propidlbase.h>
+#include "AnimationPlayer.hpp"
+#include "Util.hpp"
 
 //Dragoon: Include directory in the base of the repo contains glad, GLFW I have installed on my path through vcpkg.
 //Dragoon: I recommend using a package manager, it still allows you to use CMAKE with it.
@@ -51,6 +53,36 @@ void CheckErrors() {
 #endif
 		std::cout << error_string << std::endl;
 	}
+}
+
+
+#include <string>
+#include <fstream>
+#include <sstream>
+#include <iostream>
+
+std::string GetFileAsString(std::string filePath) {
+    std::string outString;
+    std::ifstream file;
+    // ensure ifstream objects can throw exceptions:
+    file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
+    try 
+    {
+        // open files
+        file.open(filePath);
+        std::stringstream strStream;
+        // read file's buffer contents into streams
+        strStream << file.rdbuf();		
+        // close file handlers
+        file.close();
+        // convert stream into string
+        outString = strStream.str();		
+    }
+    catch(std::ifstream::failure e)
+    {
+		Utils::PlatformTextOut("Error: Fail to read shader %s", filePath.c_str());
+    }
+	return outString;
 }
 
 int main(int argc, char** argv)
@@ -118,20 +150,108 @@ int main(int argc, char** argv)
 	animModel.setupGL();
 	CheckErrors(); 
 	
+	AnimationPlayer::AnimationPlayerState state;
+	AnimationPlayer::SetModel(state, &animModel);
+	AnimationPlayer::PlayClip(state, true, 0);
+
+	GLuint texProgram, boneProgram;
+	{
+	
+		char informationLog[512]{};
+
+		auto texVS = glCreateShader(GL_VERTEX_SHADER);
+		auto texFS =  glCreateShader(GL_FRAGMENT_SHADER);
+
+		std::string shaderSrc = GetFileAsString("assets/Shaders/tex.vert");
+		auto shaderCode = shaderSrc.c_str();
+		glShaderSource(texVS, 1, &shaderCode, nullptr);
+		glCompileShader(texVS);
+		int success;
+		glGetShaderiv(texVS, GL_COMPILE_STATUS, &success);
+		if (!success) {
+			glGetShaderInfoLog(texVS, 512, nullptr, informationLog);
+			Utils::PlatformTextOut("GL Error: %s\n", informationLog);
+		}
+	
+		shaderSrc = GetFileAsString("assets/Shaders/tex.frag");
+		shaderCode = shaderSrc.c_str();
+		glShaderSource(texFS, 1, &shaderCode, nullptr);
+		glCompileShader(texFS);
+		glGetShaderiv(texFS, GL_COMPILE_STATUS, &success);
+		if (!success ) {
+			glGetShaderInfoLog(texFS, 512, nullptr, informationLog);
+			Utils::PlatformTextOut("GL Error: %s\n", informationLog);
+		}
+
+		texProgram = glCreateProgram();
+		glAttachShader(texProgram, texVS);
+		glAttachShader(texProgram, texFS);
+		glLinkProgram(texProgram);
+		glGetProgramiv(texProgram, GL_LINK_STATUS, &success);
+		if(!success)
+		{
+			glGetShaderInfoLog(texProgram, 512, nullptr, informationLog);
+			Utils::PlatformTextOut("GL Error: %s\n", informationLog);
+		}
+		glDeleteShader(texVS);
+		glDeleteShader(texFS);
+	}
+	{
+		char informationLog[512]{};
+		int success;
+		auto boneVS = glCreateShader(GL_VERTEX_SHADER);
+		auto boneFS =  glCreateShader(GL_FRAGMENT_SHADER);
+		auto shaderSrc = GetFileAsString("assets/Shaders/bone.vert");
+		auto shaderCode = shaderSrc.c_str();
+		glShaderSource(boneVS, 1, &shaderCode, nullptr);
+		glCompileShader(boneVS);
+		glGetShaderiv(boneVS, GL_COMPILE_STATUS, &success);
+		if (!success) {
+			glGetShaderInfoLog(boneVS, 512, nullptr, informationLog);
+			Utils::PlatformTextOut("GL Error: %s\n", informationLog);
+		}
+		shaderSrc = GetFileAsString("assets/Shaders/bone.frag");
+		shaderCode = shaderSrc.c_str();
+		glShaderSource(boneFS, 1, &shaderCode, nullptr);
+		glCompileShader(boneFS);
+		glGetShaderiv(boneFS, GL_COMPILE_STATUS, &success);
+		if (!success) {
+			glGetShaderInfoLog(boneFS, 512, nullptr, informationLog);
+			Utils::PlatformTextOut("GL Error: %s", informationLog);
+		}
+	
+		boneProgram = glCreateProgram();
+		glAttachShader(boneProgram, boneVS);
+		glAttachShader(boneProgram, boneFS);
+		glLinkProgram(boneProgram);
+		glGetProgramiv(boneProgram, GL_LINK_STATUS, &success);
+		if(!success)
+		{
+			glGetShaderInfoLog(boneProgram, 512, nullptr, informationLog);
+			Utils::PlatformTextOut("GL Error: %s\n", informationLog);
+		}
+		glDeleteShader(boneVS);
+		glDeleteShader(boneFS);
+	}
+	
 	float angle = 0;
 	double startTime = glfwGetTime();
 	double lastFrameTime = startTime;
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
+    	glfwPollEvents();
+    	
 		CheckErrors(); 
     	const double currentTime = glfwGetTime()-startTime;
     	const double deltaTime = currentTime-lastFrameTime;
-		angle += (float)deltaTime*90;
+		angle += float(deltaTime*90);
     	while (angle > 360) {
     		angle -= 360;
     	}
 
+    	AnimationPlayer::Update(float(deltaTime), &state, 1);
+    	
 		texture->Bind();
     	
         /* Render here */
@@ -141,7 +261,7 @@ int main(int argc, char** argv)
         GLint windowWidth, windowHeight;
         glfwGetWindowSize(window, &windowWidth, &windowHeight);
         glViewport(0, 0, windowWidth, windowHeight);
-
+    	
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
         gluPerspective( 60, (double)windowWidth / (double)windowHeight, 0.1, 100000 );
@@ -153,13 +273,15 @@ int main(int argc, char** argv)
         glRotatef(-90,1,0,0);
         glRotatef(angle,0,0,1);
     	
+    	glUseProgram(texProgram);
 		teapot->DrawGL_3_2();
 
-    	
         //glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
         glTranslatef(0,0,-600);
         glRotatef(-90,1,0,0);
+
+    	glUseProgram(boneProgram);
     	animModel.Draw3_2();
     	
         /* Swap front and back buffers */
@@ -171,6 +293,11 @@ int main(int argc, char** argv)
     	lastFrameTime = currentTime;
     }
 
+	glDeleteProgram(texProgram);
+	glDeleteProgram(boneProgram);
+
+	animModel.Shutdown();
+	
 	delete teapot;
 	
     glfwTerminate();

@@ -34,6 +34,7 @@ public:
 	void virtual setupGL();
 	void virtual Draw3_2() const;
 	void Draw1_0();
+	void Shutdown();
 };
 
 inline void Mesh::setupGL() {
@@ -124,4 +125,13 @@ inline void Mesh::Draw1_0() {
 	glDisableClientState(GL_VERTEX_ARRAY);
 	glPopMatrix();
 
+}
+
+inline void Mesh::Shutdown() {
+	glDeleteVertexArrays(1, &vertexArrayBuffer);
+	vertexArrayBuffer = 0;
+	unsigned buffers[2] = {vertexBuffer, indexBuffer};
+	glDeleteBuffers(2, buffers);
+	vertexBuffer = 0;
+	indexBuffer = 0;
 }
