@@ -2,3 +2,5 @@
 /Debug/
 /GLFW-Assimp-Example/Debug/
 *.vcxproj.user
+/x64/
+/GLFW-Assimp-Example/x64/
