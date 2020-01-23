@@ -18,7 +18,6 @@
 #endif
 #include <IL/il.h>
 #include <IL/ilu.h>
-#include "Model.hpp"
 #include "AnimatedModel.hpp"
 #include <propidlbase.h>
 #include "AnimationPlayer.hpp"
@@ -35,7 +34,7 @@
 void CheckErrors() {
 	const char* errorStr = nullptr;
 	int error = glfwGetError(&errorStr);
-	if (error != GLFW_NO_ERROR) {
+	while (error != GLFW_NO_ERROR) {
 #ifdef _WIN32
 		OutputDebugStringA(errorStr);
 		OutputDebugStringA("\n");
@@ -45,7 +44,7 @@ void CheckErrors() {
 	}
 
 	error = glGetError();
-	if (error != GL_NO_ERROR) {
+	while (error != GL_NO_ERROR) {
 		auto error_string = gluErrorString(error);
 #ifdef _WIN32
 		OutputDebugStringA((char*) error_string);
@@ -85,24 +84,70 @@ std::string GetFileAsString(std::string filePath) {
 	return outString;
 }
 
+void CreateShader(GLuint& texProgram, const std::string vertexShaderPath, const std::string fragmentShaderPath) {
+	char informationLog[512]{};
+
+	auto vertexShader = glCreateShader(GL_VERTEX_SHADER);
+	auto fragmentShader =  glCreateShader(GL_FRAGMENT_SHADER);
+
+	std::string shaderSrc = GetFileAsString(vertexShaderPath);
+	auto shaderCode = shaderSrc.c_str();
+	glShaderSource(vertexShader, 1, &shaderCode, nullptr);
+	glCompileShader(vertexShader);
+	int success;
+	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+	if (!success) {
+		glGetShaderInfoLog(vertexShader, 512, nullptr, informationLog);
+		Utils::PlatformTextOut("GL Error: %s\n", informationLog);
+	}
+	
+	shaderSrc = GetFileAsString(fragmentShaderPath);
+	shaderCode = shaderSrc.c_str();
+	glShaderSource(fragmentShader, 1, &shaderCode, nullptr);
+	glCompileShader(fragmentShader);
+	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+	if (!success ) {
+		glGetShaderInfoLog(fragmentShader, 512, nullptr, informationLog);
+		Utils::PlatformTextOut("GL Error: %s\n", informationLog);
+	}
+
+	texProgram = glCreateProgram();
+	glAttachShader(texProgram, vertexShader);
+	glAttachShader(texProgram, fragmentShader);
+	glLinkProgram(texProgram);
+	glGetProgramiv(texProgram, GL_LINK_STATUS, &success);
+	if(!success)
+	{
+		glGetShaderInfoLog(texProgram, 512, nullptr, informationLog);
+		Utils::PlatformTextOut("GL Error: %s\n", informationLog);
+	}
+	glDeleteShader(vertexShader);
+	glDeleteShader(fragmentShader);
+}
+
 int main(int argc, char** argv)
 {
 
-	CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+	HRESULT res = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 
+	if (FAILED(res)) {
+		return 0;
+	}
+	
 	for (int i = 0; i < argc; i++)
 	{
 		OutputDebugStringA(argv[i]);
 	}
-
+	
 	/* Initialize the GLFW library */
     if (!glfwInit())
         return -1;
-	
-    /* Create a windowed mode window and its OpenGL context */
     GLFWwindow* window = glfwCreateWindow(1280, 960, "GLModel Loader", NULL, NULL);
     if (!window)
     {
+		const char* desc;
+    	glfwGetError(&desc);
+    	Utils::PlatformTextOut("GLFW Error: %s", desc);
         glfwTerminate();
         return -1;
     }
@@ -143,97 +188,43 @@ int main(int argc, char** argv)
 
 	CheckErrors(); 
 
-	AnimatedModel animModel = AnimatedModel::ImportModel("assets/UtahTeapot.fbx", false, false);
-
+	AnimatedModel animTeapot = AnimatedModel::ImportModel("assets/UtahTeapot.fbx", false, false);
+	AnimatedModel animModel = AnimatedModel::ImportModel("assets/Cheering.fbx", false, false);
+	
+	animTeapot.rootNode->position.z = -1000;
+    
+	XMVECTOR quat = XMQuaternionRotationRollPitchYaw(XM_2PI/360*90,0,0);
+    
+	XMStoreFloat4(&animTeapot.rootNode->rotation, quat);
+	animTeapot.rootNode->UpdateTransform();
+	
+	animModel.rootNode->position.z = -1000;
+	animModel.rootNode->UpdateTransform();
+	
 	teapot->SetupGL_3_2();
+	CheckErrors(); 
+	animTeapot.setupGL();
 	CheckErrors(); 
 	animModel.setupGL();
 	CheckErrors(); 
 	
-	AnimationPlayer::AnimationPlayerState state;
-	AnimationPlayer::SetModel(state, &animModel);
-	AnimationPlayer::PlayClip(state, true, 0);
+	AnimationPlayer::AnimationPlayerState state[2];
+	
+	AnimationPlayer::SetModel(state[0], &animModel);
+	AnimationPlayer::SetAnimationInterpolation(state[0], true);
+	AnimationPlayer::PlayClip(state[0], true, 0);
+	
+	AnimationPlayer::SetModel(state[1], &animTeapot);
+	AnimationPlayer::SetAnimationInterpolation(state[1], true);
+	AnimationPlayer::PlayClip(state[1], true, 0);
 
+	//Setup shader programs
 	GLuint texProgram, boneProgram;
-	{
+	CreateShader(texProgram, "assets/Shaders/tex.vert", "assets/Shaders/tex.frag");
+	CreateShader(boneProgram, "assets/Shaders/bone.vert", "assets/Shaders/bone.frag");
 	
-		char informationLog[512]{};
-
-		auto texVS = glCreateShader(GL_VERTEX_SHADER);
-		auto texFS =  glCreateShader(GL_FRAGMENT_SHADER);
-
-		std::string shaderSrc = GetFileAsString("assets/Shaders/tex.vert");
-		auto shaderCode = shaderSrc.c_str();
-		glShaderSource(texVS, 1, &shaderCode, nullptr);
-		glCompileShader(texVS);
-		int success;
-		glGetShaderiv(texVS, GL_COMPILE_STATUS, &success);
-		if (!success) {
-			glGetShaderInfoLog(texVS, 512, nullptr, informationLog);
-			Utils::PlatformTextOut("GL Error: %s\n", informationLog);
-		}
-	
-		shaderSrc = GetFileAsString("assets/Shaders/tex.frag");
-		shaderCode = shaderSrc.c_str();
-		glShaderSource(texFS, 1, &shaderCode, nullptr);
-		glCompileShader(texFS);
-		glGetShaderiv(texFS, GL_COMPILE_STATUS, &success);
-		if (!success ) {
-			glGetShaderInfoLog(texFS, 512, nullptr, informationLog);
-			Utils::PlatformTextOut("GL Error: %s\n", informationLog);
-		}
-
-		texProgram = glCreateProgram();
-		glAttachShader(texProgram, texVS);
-		glAttachShader(texProgram, texFS);
-		glLinkProgram(texProgram);
-		glGetProgramiv(texProgram, GL_LINK_STATUS, &success);
-		if(!success)
-		{
-			glGetShaderInfoLog(texProgram, 512, nullptr, informationLog);
-			Utils::PlatformTextOut("GL Error: %s\n", informationLog);
-		}
-		glDeleteShader(texVS);
-		glDeleteShader(texFS);
-	}
-	{
-		char informationLog[512]{};
-		int success;
-		auto boneVS = glCreateShader(GL_VERTEX_SHADER);
-		auto boneFS =  glCreateShader(GL_FRAGMENT_SHADER);
-		auto shaderSrc = GetFileAsString("assets/Shaders/bone.vert");
-		auto shaderCode = shaderSrc.c_str();
-		glShaderSource(boneVS, 1, &shaderCode, nullptr);
-		glCompileShader(boneVS);
-		glGetShaderiv(boneVS, GL_COMPILE_STATUS, &success);
-		if (!success) {
-			glGetShaderInfoLog(boneVS, 512, nullptr, informationLog);
-			Utils::PlatformTextOut("GL Error: %s\n", informationLog);
-		}
-		shaderSrc = GetFileAsString("assets/Shaders/bone.frag");
-		shaderCode = shaderSrc.c_str();
-		glShaderSource(boneFS, 1, &shaderCode, nullptr);
-		glCompileShader(boneFS);
-		glGetShaderiv(boneFS, GL_COMPILE_STATUS, &success);
-		if (!success) {
-			glGetShaderInfoLog(boneFS, 512, nullptr, informationLog);
-			Utils::PlatformTextOut("GL Error: %s", informationLog);
-		}
-	
-		boneProgram = glCreateProgram();
-		glAttachShader(boneProgram, boneVS);
-		glAttachShader(boneProgram, boneFS);
-		glLinkProgram(boneProgram);
-		glGetProgramiv(boneProgram, GL_LINK_STATUS, &success);
-		if(!success)
-		{
-			glGetShaderInfoLog(boneProgram, 512, nullptr, informationLog);
-			Utils::PlatformTextOut("GL Error: %s\n", informationLog);
-		}
-		glDeleteShader(boneVS);
-		glDeleteShader(boneFS);
-	}
-	
+	XMFLOAT3 upVec = {1,0,1};
+	XMVECTOR up = XMLoadFloat3(&upVec);
 	float angle = 0;
 	double startTime = glfwGetTime();
 	double lastFrameTime = startTime;
@@ -249,8 +240,14 @@ int main(int argc, char** argv)
     	while (angle > 360) {
     		angle -= 360;
     	}
-
-    	AnimationPlayer::Update(float(deltaTime), &state, 1);
+    	
+		quat = XMQuaternionRotationRollPitchYaw(XM_2PI/360*90,XM_2PI/360*angle,0);
+    	
+		XMStoreFloat4(&animTeapot.rootNode->rotation, quat);
+		animTeapot.rootNode->UpdateTransform();
+		animModel.rootNode->UpdateTransform();
+    	
+    	AnimationPlayer::Update(float(deltaTime), state, 2);
     	
 		texture->Bind();
     	
@@ -266,23 +263,45 @@ int main(int argc, char** argv)
         glLoadIdentity();
         gluPerspective( 60, (double)windowWidth / (double)windowHeight, 0.1, 100000 );
 		
-    	
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
-        glTranslatef(0,0,-600);
+        glTranslatef(250,300,0);
+    	glScalef(0.5f,0.5f,0.5f);
+        glTranslatef(0,0,-1200);
         glRotatef(-90,1,0,0);
         glRotatef(angle,0,0,1);
     	
     	glUseProgram(texProgram);
 		teapot->DrawGL_3_2();
+		CheckErrors(); 
 
         //glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
-        glTranslatef(0,0,-600);
-        glRotatef(-90,1,0,0);
+       /* glTranslatef(0,0,-600);
+        glRotatef(angle,0,1,0);
+        */
 
     	glUseProgram(boneProgram);
-    	animModel.Draw3_2();
+
+    	const unsigned NUM_MATS = 5;
+		std::vector<float> mats = std::vector<float>(NUM_MATS*4*4,1);
+    	uint32_t index = 0;
+		for (uint32_t mat_index = 0; mat_index < NUM_MATS; ++mat_index) {
+			for (uint32_t y = 0; y < 4; ++y) {
+				for (uint32_t x = 0; x < 4; ++x) {
+					//This is transposing the matricies as DirectXMath is Row Major by default (glm is also)
+					//mats[index++] = state[1].boneMats[mat_index].m[x][y];
+					auto transMat = XMLoadFloat4x4(&state[1].boneMats[mat_index]);
+					transMat = XMMatrixTranspose(transMat);
+					mats[index++] = transMat.r[x].m128_f32[y];
+				}	
+			}
+		}
+    	//Presuming that this doesn't work
+    	//TODO: Replace with a buffer update
+    	glUniformMatrix4fv(glGetUniformLocation(boneProgram,"boneMats"), NUM_MATS, GL_FALSE, mats.data());
+
+    	animTeapot.Draw3_2();
     	
         /* Swap front and back buffers */
         glfwSwapBuffers(window);

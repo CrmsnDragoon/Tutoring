@@ -23,7 +23,7 @@ namespace Utils {
 	void PlatformTextOut(const char* formatString, ...)  {
 		va_list args;
 		va_start(args, formatString);
-		char sz_buffer[512]; // get rid of this hard-coded buffer
+		char sz_buffer[1024]; // get rid of this hard-coded buffer
 		const auto num_chars_output = _vsnprintf_s(sz_buffer, _TRUNCATE, formatString, args);
 		if (num_chars_output > -1) {
 			OutputDebugStringA(sz_buffer);

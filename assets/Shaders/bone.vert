@@ -10,9 +10,20 @@ layout (location = 5) in vec4 boneWeights;
 out vec4 colour;
 out vec2 texCoord;
 
+
+uniform mat4 boneMats[256];
+
 void main()
 {
-	gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * vec4(pos.xyz,1.0);
+	mat4 skinTransform;
+	skinTransform += boneMats[boneIndexes.x] * boneWeights.x;
+	skinTransform += boneMats[boneIndexes.y] * boneWeights.y;
+	skinTransform += boneMats[boneIndexes.z] * boneWeights.z;
+	skinTransform += boneMats[boneIndexes.w] * boneWeights.w;
+	
+	vec4 position = mul(skinTransform, vec4(pos.xyz , 1.0));
+
+	gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * position;
 	colour = vecColour;
 	texCoord = texcoord;
 }

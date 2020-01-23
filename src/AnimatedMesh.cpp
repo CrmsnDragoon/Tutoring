@@ -81,7 +81,8 @@ void AnimatedMesh::setupGL() {
 
 void AnimatedMesh::Draw3_2() const {
 
-	//glLoadMatrixf(&sceneNode->Transform().m[0][0]);
+	glPushMatrix();
+	glLoadMatrixf(&sceneNode->Transform().m[0][0]);
 	
 	// draw mesh
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
@@ -95,4 +96,5 @@ void AnimatedMesh::Draw3_2() const {
     glBindTexture(GL_TEXTURE_2D, textures[i].id);
 	
     glActiveTexture(GL_TEXTURE0);*/
+	glPopMatrix();
 }
