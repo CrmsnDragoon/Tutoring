@@ -6,6 +6,4 @@
 - Assimp
 - GLFW3
 - DevIL
-
-#### Included in the repo
-- GLAD generated header and .c file
+- GLAD
