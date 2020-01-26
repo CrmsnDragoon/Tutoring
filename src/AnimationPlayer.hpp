@@ -9,7 +9,6 @@ using namespace DirectX;
 		class AnimationPlayerState {
 			friend AnimationPlayer;
 		protected:
-			AnimatedModel* model = nullptr;
 			float currentPlaybackTimeInTicks = 0;
 			int currentClipIndex = -1; // if -1 not playing a clip
 			bool looping = false;
@@ -26,6 +25,7 @@ using namespace DirectX;
 			0,0,1,0,
 			0,0,0,1 );
 		public:
+			AnimatedModel* model = nullptr;
 			std::vector<XMFLOAT4X4> boneMats = std::vector<XMFLOAT4X4>(256,
 																	   DirectX::XMFLOAT4X4(
 			1,0,0,0,

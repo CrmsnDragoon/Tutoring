@@ -3,22 +3,18 @@
 #include "AnimatedMesh.hpp"
 #include "AnimationClip.hpp"
 
-class AnimatedMesh;
-struct AnimationClip;
 class AnimatedModel : public Model {
 private:
 protected:
 public:
 	std::vector<AnimatedMesh> meshes{};
-	//std::vector<BoneAnimation> boneAnimations{};
 	std::vector<AnimationClip> animations{};
 	std::vector<Bone*> bones{};
 	SceneNode *rootNode = nullptr;
+	std::vector<Material> materials;
 	static AnimatedModel ImportModel(const char* fileName, bool flipUVs = false, bool flipWindingOrder = false);
 	static void ImportAnimation(const char* fileName, const bool flipUVs, const bool flipWindingOrder, AnimatedModel& model);
 	static AnimatedModel ImportModel(const uint8_t* uint8_tArray, size_t arraySize, bool flipUVs = false, bool flipWindingOrder = false);
-	static AnimatedModel ImportModel_FBX(const char* fileName, bool flipUVs = false, bool flipWindingOrder = false);
-	static AnimatedModel ImportModel_FBX(const uint8_t* uint8_tArray, size_t arraySize, bool flipUVs = false, bool flipWindingOrder = false);
 	
 	void setupGL() {
 		for (auto& mesh : meshes) {
@@ -26,13 +22,11 @@ public:
 		}
 	}
 	void Draw1_0() {
-		rootNode->UpdateTransform();
 		for (auto& mesh : meshes) {
 			mesh.Draw1_0();
 		}
 	}
 	void Draw3_2() {
-		rootNode->UpdateTransform();
 		for (auto& mesh : meshes) {
 			mesh.Draw3_2();
 		}

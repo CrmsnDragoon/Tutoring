@@ -7,6 +7,7 @@
 #endif
 #include <DirectXMath.h>
 #include "Util.hpp"
+#include "Bone.hpp"
 
 
 using namespace DirectX;
@@ -256,7 +257,7 @@ void PrintSkeleton(const SceneNode* sceneNode, const int skeletonDepth) {
   for (int currentDepth = 0; currentDepth < skeletonDepth; ++currentDepth) {
 		Utils::PlatformTextOut("\t");
 	}
-	Bone* bone = dynamic_cast<Bone*>(sceneNode);
+	const Bone* bone = dynamic_cast<const Bone*>(sceneNode);
 
 	if (bone != nullptr) {
 		Utils::PlatformTextOut("%d:",bone->Index());
@@ -271,7 +272,6 @@ void PrintSkeleton(const SceneNode* sceneNode, const int skeletonDepth) {
 		PrintSkeleton(child, skeletonDepth+1);
 	}
 #endif
-
 }
 
 void PrintAnimation(const aiAnimation* anim) {

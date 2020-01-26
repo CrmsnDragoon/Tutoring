@@ -34,7 +34,7 @@
 void CheckErrors() {
 	const char* errorStr = nullptr;
 	int error = glfwGetError(&errorStr);
-	while (error != GLFW_NO_ERROR) {
+	if (error != GLFW_NO_ERROR) {
 #ifdef _WIN32
 		OutputDebugStringA(errorStr);
 		OutputDebugStringA("\n");
@@ -44,7 +44,7 @@ void CheckErrors() {
 	}
 
 	error = glGetError();
-	while (error != GL_NO_ERROR) {
+	if (error != GL_NO_ERROR) {
 		auto error_string = gluErrorString(error);
 #ifdef _WIN32
 		OutputDebugStringA((char*) error_string);
@@ -142,6 +142,12 @@ int main(int argc, char** argv)
 	/* Initialize the GLFW library */
     if (!glfwInit())
         return -1;
+
+	//Set OpenGL version
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
+	
     GLFWwindow* window = glfwCreateWindow(1280, 960, "GLModel Loader", NULL, NULL);
     if (!window)
     {
@@ -194,12 +200,21 @@ int main(int argc, char** argv)
 	animTeapot.rootNode->position.z = -1000;
     
 	XMVECTOR quat = XMQuaternionRotationRollPitchYaw(XM_2PI/360*90,0,0);
-    
+
+	SceneNode* rootParent = new SceneNode("Root Parent");
+
+	rootParent->childList.resize(2);
+	animModel.rootNode->parent = rootParent;
+	rootParent->childList[0] = animModel.rootNode;
+	animTeapot.rootNode->parent = rootParent;
+	rootParent->childList[1] = animTeapot.rootNode;
+	
 	XMStoreFloat4(&animTeapot.rootNode->rotation, quat);
 	animTeapot.rootNode->UpdateTransform();
 	
-	animModel.rootNode->position.z = -1000;
-	animModel.rootNode->UpdateTransform();
+	animModel.rootNode->position.x =  250;
+	animModel.rootNode->position.z = -500;
+	rootParent->UpdateTransform();
 	
 	teapot->SetupGL_3_2();
 	CheckErrors(); 
@@ -223,6 +238,28 @@ int main(int argc, char** argv)
 	CreateShader(texProgram, "assets/Shaders/tex.vert", "assets/Shaders/tex.frag");
 	CreateShader(boneProgram, "assets/Shaders/bone.vert", "assets/Shaders/bone.frag");
 	
+	auto boneBufferBlock = glGetUniformBlockIndex(boneProgram, "BoneBuffer");
+	CheckErrors(); 
+
+	const char* uniform_names[] = {"boneMats"};
+	GLuint uniform_indices[1];
+	glGetUniformIndices(boneProgram, 1, uniform_names, uniform_indices);
+	CheckErrors(); 
+
+	GLuint bone_matrix_buffer = 0;
+	glGenBuffers(1, &bone_matrix_buffer);
+	glBindBuffer(GL_UNIFORM_BUFFER, bone_matrix_buffer);
+	CheckErrors(); 
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(XMFLOAT4X4)*256, state[1].boneMats.data(), GL_DYNAMIC_DRAW);
+	CheckErrors();
+	glUniformBlockBinding(boneProgram,boneBufferBlock,0);
+	//glBindBufferRange( GL_UNIFORM_BUFFER, 0, bone_matrix_buffer, 0, sizeof(XMFLOAT4X4)*256);
+	glBindBufferBase( GL_UNIFORM_BUFFER, 0, bone_matrix_buffer);
+	CheckErrors(); 
+	glBindBuffer(GL_UNIFORM_BUFFER,0);
+	CheckErrors(); 
+	
+		
 	XMFLOAT3 upVec = {1,0,1};
 	XMVECTOR up = XMLoadFloat3(&upVec);
 	float angle = 0;
@@ -234,20 +271,21 @@ int main(int argc, char** argv)
     	glfwPollEvents();
     	
 		CheckErrors(); 
-    	const double currentTime = glfwGetTime()-startTime;
-    	const double deltaTime = currentTime-lastFrameTime;
-		angle += float(deltaTime*90);
-    	while (angle > 360) {
-    		angle -= 360;
-    	}
+    	const double currentTime = glfwGetTime();
+    	const double timeSinceStart = currentTime-startTime;
+    	const float deltaTime = float(currentTime-lastFrameTime);
+		angle += deltaTime*90;
+	    while (angle > 360) {
+		    angle -= 360;
+	    }
     	
-		quat = XMQuaternionRotationRollPitchYaw(XM_2PI/360*90,XM_2PI/360*angle,0);
+		/*quat = XMQuaternionRotationRollPitchYaw(XM_2PI/360*90,XM_2PI/360*angle,0);
     	
-		XMStoreFloat4(&animTeapot.rootNode->rotation, quat);
-		animTeapot.rootNode->UpdateTransform();
-		animModel.rootNode->UpdateTransform();
+		XMStoreFloat4(&animTeapot.rootNode->rotation, quat);*/
     	
-    	AnimationPlayer::Update(float(deltaTime), state, 2);
+		rootParent->UpdateTransform();
+    	
+    	AnimationPlayer::Update(deltaTime, state, 2);
     	
 		texture->Bind();
     	
@@ -274,34 +312,28 @@ int main(int argc, char** argv)
     	glUseProgram(texProgram);
 		teapot->DrawGL_3_2();
 		CheckErrors(); 
-
-        //glMatrixMode(GL_MODELVIEW);
+		
+        glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
-       /* glTranslatef(0,0,-600);
-        glRotatef(angle,0,1,0);
-        */
-
     	glUseProgram(boneProgram);
 
-    	const unsigned NUM_MATS = 5;
-		std::vector<float> mats = std::vector<float>(NUM_MATS*4*4,1);
-    	uint32_t index = 0;
-		for (uint32_t mat_index = 0; mat_index < NUM_MATS; ++mat_index) {
-			for (uint32_t y = 0; y < 4; ++y) {
-				for (uint32_t x = 0; x < 4; ++x) {
-					//This is transposing the matricies as DirectXMath is Row Major by default (glm is also)
-					//mats[index++] = state[1].boneMats[mat_index].m[x][y];
-					auto transMat = XMLoadFloat4x4(&state[1].boneMats[mat_index]);
-					transMat = XMMatrixTranspose(transMat);
-					mats[index++] = transMat.r[x].m128_f32[y];
-				}	
-			}
-		}
-    	//Presuming that this doesn't work
-    	//TODO: Replace with a buffer update
-    	glUniformMatrix4fv(glGetUniformLocation(boneProgram,"boneMats"), NUM_MATS, GL_FALSE, mats.data());
+    	u32 index = 0;
+		for (auto& anim_state : state) {
+			auto mats = std::vector<XMFLOAT4X4>(256);
+			const auto num_bones = anim_state.boneMats.size()/2;
+			for (u32 mat_index = 0; mat_index < num_bones; ++mat_index) {
+				mats[mat_index] = anim_state.boneMats[mat_index];
+				auto mat = XMLoadFloat4x4(&anim_state.boneMats[mat_index]);
+				XMStoreFloat4x4(&mats[num_bones + mat_index], XMMatrixInverse(nullptr, mat));
 
-    	animTeapot.Draw3_2();
+			}
+			
+			glBindBuffer(GL_UNIFORM_BUFFER,bone_matrix_buffer);
+			glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(XMFLOAT4X4) * mats.size(), mats.data());
+			glBindBuffer(GL_UNIFORM_BUFFER,0);
+			
+			anim_state.model->Draw3_2();
+		}
     	
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
@@ -312,10 +344,13 @@ int main(int argc, char** argv)
     	lastFrameTime = currentTime;
     }
 
+	glDeleteBuffers(1,&bone_matrix_buffer);
+
 	glDeleteProgram(texProgram);
 	glDeleteProgram(boneProgram);
 
 	animModel.Shutdown();
+	animTeapot.Shutdown();
 	
 	delete teapot;
 	

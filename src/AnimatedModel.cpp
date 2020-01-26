@@ -444,11 +444,12 @@ AnimatedModel ImportAnimatedModelAssimp(const aiScene* const scene) {
 		}
 	}
 	if (scene->HasMaterials()) {
+		outModel.materials = std::vector<Material>(scene->mNumMaterials);
 		for (size_t material_index = 0; material_index < scene->mNumMaterials; material_index++)
 		{
-			//TODO(Dragoon): Materials?
 			aiMaterial* material = scene->mMaterials[material_index];
 			PrintMaterial(material);
+			outModel.materials[material_index].LoadMaterial(material);
 		}
 	}
 	if (scene->HasTextures()) {

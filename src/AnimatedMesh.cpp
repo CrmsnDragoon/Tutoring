@@ -1,5 +1,6 @@
 
 #include "AnimatedMesh.hpp"
+#include "Util.hpp"
 
 void AnimatedMesh::setupGL() {
 
@@ -27,7 +28,7 @@ void AnimatedMesh::setupGL() {
 			vertices[index] = {
 				positions[index],
 				normals[index],
-				vertexColours[0][index],
+				XMFLOAT4(1,1,1,1),
 				{texCoords[0][index].x, texCoords[0][index].y},
 				boneWeights[index].boneIndexes,
 				boneWeights[index].boneWeights
@@ -54,11 +55,11 @@ void AnimatedMesh::setupGL() {
 	glBindVertexArray(vertexArrayBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
 
-	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), vertices.data(), GL_STATIC_DRAW);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int),
-	             &indices[0], GL_STATIC_DRAW);
+	             indices.data(), GL_STATIC_DRAW);
 
 	// vertex positions
 	glEnableVertexAttribArray(0);

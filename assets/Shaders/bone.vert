@@ -10,20 +10,21 @@ layout (location = 5) in vec4 boneWeights;
 out vec4 colour;
 out vec2 texCoord;
 
-
-uniform mat4 boneMats[256];
+layout (binding = 0, column_major) uniform BoneBuffer {
+	mat4 boneMats[256];
+} boneBuffer;
 
 void main()
 {
 	mat4 skinTransform;
-	skinTransform += boneMats[boneIndexes.x] * boneWeights.x;
-	skinTransform += boneMats[boneIndexes.y] * boneWeights.y;
-	skinTransform += boneMats[boneIndexes.z] * boneWeights.z;
-	skinTransform += boneMats[boneIndexes.w] * boneWeights.w;
+	skinTransform += boneBuffer.boneMats[boneIndexes.x] * boneWeights.x;
+	skinTransform += boneBuffer.boneMats[boneIndexes.y] * boneWeights.y;
+	skinTransform += boneBuffer.boneMats[boneIndexes.z] * boneWeights.z;
+	skinTransform += boneBuffer.boneMats[boneIndexes.w] * boneWeights.w;
 	
-	vec4 position = mul(skinTransform, vec4(pos.xyz , 1.0));
+	vec4 position = mul(skinTransform,vec4(pos.xyz , 1.0));
 
-	gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * position;
+	gl_Position = mul(gl_ProjectionMatrix*gl_ModelViewMatrix,position);
 	colour = vecColour;
 	texCoord = texcoord;
 }

@@ -1,6 +1,8 @@
 /.vs/
 /Debug/
+/Release/
 /GLFW-Assimp-Example/Debug/
+/GLFW-Assimp-Example/Release/
 *.vcxproj.user
 /x64/
 /GLFW-Assimp-Example/x64/
